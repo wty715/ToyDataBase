@@ -1,0 +1,84 @@
+letter  = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+        | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
+digit   = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+digits  = digit, [{digit}];
+twodigit= digit, digit;
+sign    = '+' | '-';
+ascii   = letter | digit | '$' | '_';
+int     = [sign], digits;
+dot     = '.';
+frac    = dot, digits;
+float   = (int, frac) | frac;
+exp     = ('e' | 'E'), int;
+expf    = (int, float), exp;
+floatnum= float | expf;
+name_id = letter, ascii, ascii, {ascii};
+date    = twodigit, twodigit, '-', twodigit, '-', twodigit, space, twodigit, ':', twodigit, ':', twodigit;
+semicol = ';';
+equal   = '=';
+
+column_name     = letter, ascii, ascii, [{ascii}];
+column_type     = "INT" | "FLOAT" | "STRING" | "DATE";
+table_name      = letter, ascii, ascii, [{ascii}];
+alias_name      = letter, ascii, ascii, [{ascii}];
+data_value      = int | floatnum | ('"', string, '"') | ('"', date, '"');
+
+show_tables     = "SHOW", space, "TABLES", semicol;
+create_table    =
+    "CREATE", space, "TABLE", space, table_name, space, '(',
+        column_name, space, column_type,
+        [{comma, space, column_name, space, column_type}],
+        [comma, space, "PRIMARYKEY", space, '(', column_name, ')'],
+    ')', semicol;
+show_structure  = "DESC", space, table_name, semicol;
+delete_table    = "DROP", space, table_name, semicol;
+alter_table     = "ALTER", space, "TABLE", space, table_name, space;
+mod_table_name  = alter_table, "RENAME", space, table_name, semicol;
+mod_col_name    = alter_table, "CRENAME", space, column_name, space, column_name, space, column_type, semicol;
+mod_col_type    = alter_table, "MODIFY", space, column_name, space, column_type, semicol;
+add_new_col     = alter_table, "ADD", space, column_name, space, column_type, semicol;
+del_one_col     = alter_table, "DROP", space, column_name, semicol;
+
+insert_data =
+    "INSERT", space, "INTO", space, table_name, space,
+    '(', column_name, [{comma, space, column_name}], ')',
+    space, "VALUES", space,
+    '(', data_value, [{comma, space, data_value}], ')',
+    semicol;
+update_data =
+    "UPDATE", space, table_name, "SET", space, column_name, equal, data_value,
+    [{comma, space, column_name, equal, data_value}],
+    [space, where_cond], semicol;
+delete_data =
+    "DELETE", space, "FROM", space, table_name,
+    [space, where_cond], semicol;
+select_data =
+    "SELECT", [space, ("DISTINCT" | "ALL")],
+    (
+        space, column_name, [space, "AS", space, alias_name],
+        [{comma, space, column_name, [space, "AS", space, alias_name]}],
+        space, "FROM", space, table_name,
+    ) | (
+        space, [alias_name, dot], column_name,
+        [{comma, space, [alias_name, dot], column_name}],
+        space, "FROM", space, table_name, [space, "AS", space, alias_name]
+    )
+    [space, where_cond],
+    [space, group_by],
+    [space, having],
+    [space, order_by],
+    [space, limit],
+    semicol;
+where_cond =
+    "WHERE", space, condition,
+    [{space, ("AND" | "OR"), space, condition}];
+condition =
+    ;
+group_by =
+    ;
+having =
+    ;
+order_by =
+    ;
+limit =
+    ;
